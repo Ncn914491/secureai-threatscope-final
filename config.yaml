@@ -1,0 +1,14 @@
+credentials:
+  usernames:
+    secureai:
+      name: Secure AI Admin
+      password: 'secureai'  # Plaintext for now, will improve later
+
+cookie:
+  name: secureai_cookie
+  key: secureai_key
+  expiry_days: 1
+
+preauthorized:
+  emails:
+    - secureai@example.com

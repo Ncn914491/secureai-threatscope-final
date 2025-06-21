@@ -1,65 +1,59 @@
 import streamlit as st
-import os
-from vertexai.preview.generative_models import GenerativeModel
-import vertexai
-from auth import login
-from analyzer import initialize_history, log_analysis, show_history
+import datetime
+from login import login
+from history import display_history
+from rules import custom_rules_analysis
+from gemini import gemini_threat_analysis
 
-# --- Session & Login ---
-if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
-    login()
-    st.stop()
-
-# --- GCP Vertex AI Initialization ---
-PROJECT_ID = "freetrailproject-463104"
-LOCATION = "us-central1"
-vertexai.init(project=PROJECT_ID, location=LOCATION)
-model = GenerativeModel("gemini-2.5-flash")
-
-# --- Streamlit Page Config ---
+# Set page config
 st.set_page_config(page_title="SecureAI ThreatScope", layout="wide")
-st.title("🛡️ SecureAI ThreatScope")
-st.subheader("AI-Driven Threat Analyzer using Gemini 2.5 Flash")
-st.markdown("---")
+st.markdown("## 🛡️ SecureAI ThreatScope")
 
-# --- Initialize Log History ---
-initialize_history()
+# Authenticate user
+auth_status, authenticator, name = login()
 
-# --- Threat Input ---
-st.header("📝 Input Log or Alert")
-log_input = st.text_area(
-    "Paste your log, IDS alert, or firewall event:",
-    height=300,
-    placeholder="[ALERT] Failed SSH login from IP 192.168.1.101 on port 22..."
-)
+if auth_status:
+    st.sidebar.success(f"Welcome, {name}!")
+    menu = st.sidebar.radio("Navigate", ["Threat Analysis", "History", "Logout"])
 
-# --- Threat Analysis Trigger ---
-if st.button("Analyze Threat 🚨") and log_input.strip():
-    with st.spinner("Analyzing with Gemini 2.5 Flash..."):
-        try:
-            prompt = f"""
-You are a cybersecurity analyst AI.
+    if menu == "Threat Analysis":
+        st.subheader("📥 Input Threat Intelligence Data")
+        user_input = st.text_area(
+            "Paste indicators of compromise (IOCs), logs, or any threat-related info:",
+            height=300,
+            placeholder="[2025-06-21 08:12:33] INFO: User 'alice' logged into system from IP 192.168.0.12\n[2025-06-21 08:22:10] HIGH: Malware detected..."
+        )
 
-Given this log data, provide:
-1. Threat summary
-2. Severity level
-3. Suggested remediation steps
-4. Suspicious IPs, domains, or ports
+        analysis_mode = st.radio("Choose Analysis Mode", ["Custom Rules", "Gemini AI"])
 
-Log:
-{log_input.strip()}
-"""
-            response = model.generate_content(prompt)
-            result = response.text
+        if st.button("Analyze Logs"):
+            with st.spinner("Analyzing logs..."):
+                if analysis_mode == "Custom Rules":
+                    result = custom_rules_analysis(user_input)
+                else:
+                    result = gemini_threat_analysis(user_input)
 
-            st.subheader("✅ Threat Summary Generated:")
-            st.markdown(result)
-            log_analysis(log_input.strip(), result)
+            st.success("✅ Threat Analysis Complete!")
+            st.markdown(f"✅ Mode: **{analysis_mode}**")
+            st.markdown(f"📅 Timestamp: `{datetime.datetime.utcnow().isoformat()} UTC`")
+            st.markdown(f"📌 Total Logs Analyzed: {len(user_input.strip().splitlines())}")
 
-        except Exception as e:
-            st.error(f"❌ Error during analysis: {str(e)}")
+            st.subheader("🔍 Threat Intelligence Summary")
 
-# --- History Viewer ---
-st.markdown("---")
-show_history()
-st.caption("Powered by Google Vertex AI + Streamlit | SecureAI ThreatScope – 2025")
+            if isinstance(result, str) and '\n' in result:
+                st.code(result, language="markdown")
+            else:
+                st.markdown(result)
+
+    elif menu == "History":
+        display_history()
+
+    elif menu == "Logout":
+        st.sidebar.info("You have been logged out.")
+        st.stop()
+
+elif auth_status is False:
+    st.error("❌ Incorrect username or password.")
+
+elif auth_status is None:
+    st.warning("Please enter your credentials to continue.")

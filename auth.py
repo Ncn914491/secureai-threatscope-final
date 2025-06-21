@@ -1,22 +1,37 @@
 import streamlit as st
+import streamlit_authenticator as stauth
 
+# Dummy credentials
 def login():
-    # Page Setup
-    st.set_page_config(page_title="SecureAI Login", layout="centered")
-    st.title("🔐 SecureAI Login")
+    # --- Define credentials dictionary ---
+    usernames = ['secureai']
+    names = ['SecureAI User']
+    passwords = ['secureai']
 
-    # Credential Input
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+    hashed_passwords = stauth.Hasher(passwords).generate()
 
-    # Login Trigger
-    if st.button("Login"):
-        if username == "secureai" and password == "secureai":
-            st.success("✅ Login successful")
-            st.session_state["authenticated"] = True
-            st.experimental_rerun()
-        else:
-            st.error("❌ Invalid credentials")
+    credentials = {
+        "usernames": {
+            usernames[0]: {
+                "name": names[0],
+                "password": hashed_passwords[0]
+            }
+        }
+    }
 
-    # Prevent further rendering if not authenticated
-    st.stop()
+    # --- Create the authenticator instance ---
+    authenticator = stauth.Authenticate(
+        credentials,
+        cookie_name='secureai_app',
+        key='abcdef',
+        cookie_expiry_days=1
+    )
+
+    name, auth_status, username = authenticator.login("🔐 SecureAI Login", "main")
+
+    if auth_status is False:
+        st.error("Invalid username or password.")
+    elif auth_status is None:
+        st.warning("Please enter your credentials.")
+
+    return auth_status, authenticator, name

@@ -1,0 +1,15 @@
+credentials:
+  usernames:
+    secureai:
+      email: secureai@example.com
+      name: SecureAI User
+      password: '$2b$12$w8UPnvUvWzMvQaXJh.TYKu9hC6uDgu4ekA2Et6JmtYmT5TcrAqE3C'  # hashed password for 'secureai'
+
+cookie:
+  name: secureai_cookie
+  key: some_random_secret_key
+  expiry_days: 1
+
+preauthorized:
+  emails:
+    - secureai@example.com
