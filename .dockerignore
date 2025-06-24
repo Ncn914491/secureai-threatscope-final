@@ -1,0 +1,58 @@
+# Ignore virtual environments
+venv/
+*.venv/
+env/
+*.env/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE/editor configuration files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Ignore build artifacts
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Ignore local instance of data files or sensitive files
+*.csv # If analysis_history.csv is generated locally as fallback
+*.log
+*.sqlite3
+*.db
+
+# Secrets / Local Environment Configuration
+.env # Actual .env file should never be committed or in image
+path/to/your/serviceAccountKey.json # Example path, should not be in image
+
+# Docker related files if any others
+# Dockerfile # Usually not ignored, but can be if managed elsewhere
+# .dockerignore # This file itself
+
+# Git related files
+.git/
+.gitignore
+.gitattributes
+
+# Test files or reports (if not needed in production image)
+# coverage.xml
+# htmlcov/
+# .pytest_cache/
+# nosetests.xml
+# *.test.xml
+# test-reports/
+
+# Logs
+logs.csv # The existing one
+analysis_history.csv # If it's ever created locally
